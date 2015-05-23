@@ -8,27 +8,64 @@ var rename = require('gulp-rename');
 var sh = require('shelljs');
 
 var paths = {
-  sass: ['./scss/**/*.scss']
+  sass: ['./app/stylesheets/**/*.scss'],
+  angularApp: ['./app/js/app.js'],
+  controllers: ['./app/js/controllers/*.js'],
+  services: ['./app/js/services/*.js'],
+  vendors: ['./app/vendors/ionic/js/ionic.bundle.js']
 };
 
-gulp.task('default', ['sass']);
+gulp.task('default', ['sass', 'app', 'controllers', 'services', 'vendors']);
 
 gulp.task('sass', function(done) {
-  gulp.src('./scss/ionic.app.scss')
+  gulp.src(paths.sass)
     .pipe(sass({
       errLogToConsole: true
     }))
-    .pipe(gulp.dest('./www/css/'))
+    .pipe(gulp.dest('./www/assets/css/'))
     .pipe(minifyCss({
       keepSpecialComments: 0
     }))
     .pipe(rename({ extname: '.min.css' }))
-    .pipe(gulp.dest('./www/css/'))
+    .pipe(gulp.dest('./www/assets/css/'))
     .on('end', done);
 });
 
 gulp.task('watch', function() {
   gulp.watch(paths.sass, ['sass']);
+  gulp.watch(paths.angularApp, ['app']);
+  gulp.watch(paths.controllers, ['controllers']);
+  gulp.watch(paths.services, ['services']);
+});
+
+gulp.task('app', function() {
+  gulp.src(paths.angularApp)
+    .pipe(gulp.dest('./www/assets/js/'));
+});
+
+gulp.task('controllers', function() {
+  gulp.src(paths.controllers)
+    .pipe(concat('controllers.js'))
+    .pipe(gulp.dest('./www/assets/js/'));
+});
+
+
+gulp.task('services', function() {
+  gulp.src(paths.services)
+    .pipe(concat('services.js'))
+    .pipe(gulp.dest('./www/assets/js/'));
+});
+
+gulp.task('vendors', function() {
+  gulp.src(paths.vendors)
+    .pipe(concat('vendors.js'))
+    .pipe(gulp.dest('./www/assets/js/'));
+
+  gulp.src('app/vendors/ionic/css/ionic.css')
+    .pipe(gulp.dest('./www/assets/css/'));
+
+  gulp.src('app/vendors/ionic/fonts/**/*.*')
+    .pipe(gulp.dest('./www/assets/fonts/'));
 });
 
 gulp.task('install', ['git-check'], function() {
